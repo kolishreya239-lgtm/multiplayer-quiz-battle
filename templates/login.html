@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Login - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 480px; padding: 4rem 1.5rem;">
+  <div class="cyber-card cyber-card-glow">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <span class="badge-cyber badge-cyan"><i data-lucide="key"></i> Authenticate</span>
+      <h2 style="font-size: 1.8rem; font-weight: 900; margin-top: 0.5rem;">ENTER THE ARENA</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Access your battle stats, ranking, and private rooms.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input type="text" name="username" id="loginUsername" class="form-control" placeholder="e.g. cyber_ninja" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn-cyber btn-cyber-primary btn-block" style="margin-top: 0.5rem;">
+        <i data-lucide="log-in"></i> Sign In to Battle
+      </button>
+    </form>
+
+    <div style="display: flex; align-items: center; gap: 1rem; margin: 1.75rem 0;">
+      <div style="flex-grow: 1; height: 1px; background: var(--border-subtle);"></div>
+      <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Or 1-Click Demo</span>
+      <div style="flex-grow: 1; height: 1px; background: var(--border-subtle);"></div>
+    </div>
+
+    <!-- Quick Guest Access -->
+    <a href="{{ url_for('auth.guest_login') }}" class="btn-cyber btn-cyber-secondary btn-block" style="margin-bottom: 1.5rem;">
+      <i data-lucide="user-plus"></i> Play as Guest (Instant Access)
+    </a>
+
+    <!-- Pre-seeded Demo Fill Buttons -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1rem;">
+      <span style="display: block; font-size: 0.75rem; font-family: var(--font-heading); color: var(--text-muted); margin-bottom: 0.6rem; text-transform: uppercase;">
+        ⚡ Instant Demo Accounts (Auto-fill):
+      </span>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+        <button type="button" class="btn-cyber btn-cyber-ghost btn-sm" onclick="fillDemo('cyber_ninja', 'demo123')">
+          🥷 Cyber Ninja
+        </button>
+        <button type="button" class="btn-cyber btn-cyber-ghost btn-sm" onclick="fillDemo('pixel_queen', 'demo123')">
+          👑 Pixel Queen
+        </button>
+        <button type="button" class="btn-cyber btn-cyber-ghost btn-sm" onclick="fillDemo('neon_falcon', 'demo123')">
+          🦅 Neon Falcon
+        </button>
+        <button type="button" class="btn-cyber btn-cyber-ghost btn-sm" onclick="fillDemo('admin', 'admin123')">
+          🧙‍♂️ Admin
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+      New recruit? <a href="{{ url_for('auth.register') }}" class="text-cyan font-heading" style="font-weight: 700;">Create Account</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fillDemo(username, password) {
+    document.getElementById('loginUsername').value = username;
+    document.getElementById('loginPassword').value = password;
+    window.soundEngine.play('click');
+  }
+</script>
+{% endblock %}

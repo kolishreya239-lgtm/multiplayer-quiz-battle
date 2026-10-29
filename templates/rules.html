@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Rules of Engagement & Scoring - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem 1.5rem; max-width: 900px;">
+  
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <span class="badge-cyber badge-purple"><i data-lucide="scale"></i> OFFICIAL TOURNAMENT CODEX</span>
+    <h2 style="font-size: 2.5rem; font-weight: 900; margin: 0.5rem 0;">RULES &amp; SCORING SYSTEM</h2>
+    <p style="color: var(--text-secondary); max-width: 580px; margin: 0 auto;">
+      A completely transparent, server-validated scoring model rewarding both accuracy and lightning speed.
+    </p>
+  </div>
+
+  <!-- Scoring Table Card -->
+  <div class="cyber-card" style="margin-bottom: 2rem;">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="award"></i> Point Allocation Breakdown</h3>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="cyber-table">
+        <thead>
+          <tr>
+            <th>Outcome</th>
+            <th>Base Score</th>
+            <th>Speed Bonus</th>
+            <th>Streak Bonus</th>
+            <th>Max Potential</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong class="text-green">Correct Answer</strong></td>
+            <td>100 PTS</td>
+            <td>0 to 50 PTS</td>
+            <td>0 to 100 PTS</td>
+            <td class="font-heading text-cyan" style="font-weight: 800;">250 PTS</td>
+          </tr>
+          <tr>
+            <td><strong class="text-pink">Incorrect Answer</strong></td>
+            <td>0 PTS</td>
+            <td>0 PTS</td>
+            <td>0 PTS (Streak Reset)</td>
+            <td class="font-heading text-pink">0 PTS</td>
+          </tr>
+          <tr>
+            <td><strong class="text-muted">Unanswered / Time-Out</strong></td>
+            <td>0 PTS</td>
+            <td>0 PTS</td>
+            <td>0 PTS (Streak Reset)</td>
+            <td class="font-heading text-muted">0 PTS</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Speed Bonus Details -->
+  <div class="cyber-card" style="margin-bottom: 2rem; border-left: 4px solid var(--neon-cyan);">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="zap"></i> Speed Bonus Algorithm</h3>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+      The faster you correctly answer, the higher your speed multiplier:
+    </p>
+    <div style="background: var(--bg-darker); padding: 1rem 1.5rem; border-radius: 8px; font-family: monospace; font-size: 1rem; color: var(--neon-cyan); margin-bottom: 1rem;">
+      Speed Bonus = round( ( (Question Time - Response Time) / Question Time ) * 50 )
+    </div>
+    <p style="color: var(--text-muted); font-size: 0.85rem;">
+      Example: In a 15-second round, submitting a correct answer in <strong>1.5 seconds</strong> earns 100 base + 45 speed bonus = <strong>145 points</strong>!
+    </p>
+  </div>
+
+  <!-- Streak Multiplier Details -->
+  <div class="cyber-card" style="margin-bottom: 2rem; border-left: 4px solid #ff9900;">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title" style="color: #ff9900;"><i data-lucide="flame"></i> Consecutive Streak Bonus</h3>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+      Consecutive correct answers build streak momentum. Starting from the 2nd consecutive correct answer, an escalating bonus is added:
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; text-align: center;">
+      <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Streak 1</span>
+        <div class="font-heading" style="color: #fff; font-weight: 700;">+0 PTS</div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Streak 2</span>
+        <div class="font-heading text-green" style="font-weight: 700;">+20 PTS</div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Streak 3</span>
+        <div class="font-heading text-green" style="font-weight: 700;">+40 PTS</div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Streak 4</span>
+        <div class="font-heading text-green" style="font-weight: 700;">+60 PTS</div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Streak 5+ (Max)</span>
+        <div class="font-heading text-gold" style="font-weight: 900;">+100 PTS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fair Play Section -->
+  <div id="fairplay" class="cyber-card" style="border-left: 4px solid var(--neon-green);">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-green"><i data-lucide="shield-check"></i> Fair Play &amp; Anti-Tampering Architecture</h3>
+    </div>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem; color: var(--text-secondary);">
+      <li style="display: flex; gap: 0.75rem;">
+        <i data-lucide="check" style="color: var(--neon-green); flex-shrink: 0;"></i>
+        <span><strong>Zero Client-Side Answers:</strong> The correct answer and explanation are retained strictly on the Python backend until all players answer or the clock expires. Inspecting browser DevTools or WebSocket payloads will not reveal the answer.</span>
+      </li>
+      <li style="display: flex; gap: 0.75rem;">
+        <i data-lucide="check" style="color: var(--neon-green); flex-shrink: 0;"></i>
+        <span><strong>Lockout Protection:</strong> Each player is permitted exactly one submission per question. Duplicate or subsequent submissions are blocked on the server.</span>
+      </li>
+      <li style="display: flex; gap: 0.75rem;">
+        <i data-lucide="check" style="color: var(--neon-green); flex-shrink: 0;"></i>
+        <span><strong>Server Master Clock:</strong> Question durations and timestamps are determined by Python high-precision server timers, preventing local clock manipulation.</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+{% endblock %}

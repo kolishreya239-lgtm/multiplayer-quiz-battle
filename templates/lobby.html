@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Battle Lobby: {{ room.code }} - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem;">
+  
+  <!-- Lobby Header Bar -->
+  <div class="cyber-card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <span class="badge-cyber badge-purple"><i data-lucide="shield"></i> PRE-BATTLE LOBBY</span>
+      <h2 style="font-size: 1.6rem; font-weight: 900; margin-top: 0.4rem;">ASSEMBLE OPERATIVES</h2>
+    </div>
+
+    <!-- Room Code Badge with Copy -->
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Room Code:</span>
+      <div class="room-code-badge" id="copyCodeBtn" onclick="copyToClipboard('{{ room.code }}', 'Room code copied to clipboard!')" title="Click to copy room code">
+        <span>{{ room.code }}</span>
+        <i data-lucide="copy" style="width: 18px; height: 18px;"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Lobby Grid: Player Slots & Settings/Chat -->
+  <div class="lobby-layout">
+    
+    <!-- Left Column: Player Slots & Ready Trigger -->
+    <div>
+      <div class="cyber-card">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title text-cyan"><i data-lucide="users"></i> Squad Slots (<span id="playerCountDisplay">1</span>/4)</h3>
+          <span class="badge-cyber badge-green" id="lobbyStatusBadge">Lobby Open</span>
+        </div>
+
+        <!-- 4 Player Slots Container -->
+        <div class="lobby-slots" id="playerSlotsContainer">
+          <!-- Dynamically populated via JS/Socket.IO -->
+        </div>
+
+        <!-- Action Bar: Ready Toggle & Start Match -->
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn-cyber btn-cyber-primary" id="toggleReadyBtn" onclick="toggleReady()" style="flex: 1;">
+            <i data-lucide="check-circle-2"></i> Ready Up
+          </button>
+
+          <button type="button" class="btn-cyber btn-cyber-success" id="startMatchBtn" onclick="startMatch()" style="flex: 1; display: none;">
+            <i data-lucide="swords"></i> Start Match
+          </button>
+        </div>
+
+        <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-darker); border-radius: 8px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="info" style="color: var(--neon-cyan); flex-shrink: 0;"></i>
+          <span>Invite another player by sending them the room code <strong>{{ room.code }}</strong>. Both players must be <strong>READY</strong> to initiate the battle.</span>
+        </div>
+      </div>
+
+      <!-- Host Settings Panel -->
+      <div class="cyber-card" id="hostSettingsCard" style="margin-top: 1.5rem; display: none;">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title text-purple"><i data-lucide="sliders"></i> Host Battle Settings</h3>
+          <span class="badge-cyber badge-purple">Host Controls</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Category</label>
+            <select id="settingCategory" class="form-control" onchange="updateSettings()">
+              <option value="all">⚡ All Categories</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if room.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Difficulty</label>
+            <select id="settingDifficulty" class="form-control" onchange="updateSettings()">
+              <option value="all" {% if room.difficulty == 'all' %}selected{% endif %}>All Difficulties</option>
+              <option value="easy" {% if room.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+              <option value="medium" {% if room.difficulty == 'medium' %}selected{% endif %}>Medium</option>
+              <option value="hard" {% if room.difficulty == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Questions</label>
+            <select id="settingQuestionCount" class="form-control" onchange="updateSettings()">
+              <option value="5" {% if room.question_count == 5 %}selected{% endif %}>5 Questions</option>
+              <option value="7" {% if room.question_count == 7 %}selected{% endif %}>7 Questions</option>
+              <option value="10" {% if room.question_count == 10 %}selected{% endif %}>10 Questions</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Time Per Question</label>
+            <select id="settingQuestionTime" class="form-control" onchange="updateSettings()">
+              <option value="10" {% if room.question_time == 10 %}selected{% endif %}>10s (Blitz)</option>
+              <option value="15" {% if room.question_time == 15 %}selected{% endif %}>15s (Standard)</option>
+              <option value="20" {% if room.question_time == 20 %}selected{% endif %}>20s (Relaxed)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Real-Time Lobby Chat -->
+    <div>
+      <div class="cyber-card chat-box">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title"><i data-lucide="message-square"></i> Arena Comms</h3>
+          <span class="badge-cyber badge-cyan">Live</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg">
+            <span class="chat-msg-header">System</span>
+            <span style="color: var(--text-muted);">Welcome to Room {{ room.code }}. Prepare for battle!</span>
+          </div>
+        </div>
+
+        <form class="chat-input-bar" id="chatForm" onsubmit="sendChat(event)">
+          <input type="text" id="chatInput" class="form-control" placeholder="Type a message or taunt..." maxlength="100" autocomplete="off">
+          <button type="submit" class="btn-cyber btn-cyber-primary btn-sm">
+            <i data-lucide="send"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Match Starting Countdown Overlay -->
+<div id="countdownOverlay" style="display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(6, 9, 17, 0.95); backdrop-filter: blur(16px); align-items: center; justify-content: center; flex-direction: column;">
+  <div style="font-family: var(--font-heading); font-size: 1.5rem; color: var(--neon-cyan); letter-spacing: 0.15em; margin-bottom: 1rem;">
+    MATCH COMMENCING IN
+  </div>
+  <div id="countdownNumber" style="font-family: var(--font-heading); font-size: 8rem; font-weight: 900; color: #ffffff; text-shadow: 0 0 40px var(--cyan-glow); animation: pulseGreen 1s infinite;">
+    3
+  </div>
+  <div style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em;">
+    Get Ready &bull; Lock In
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/lobby.js') }}"></script>
+<script>
+  window.ROOM_CODE = "{{ room.code }}";
+  window.CURRENT_USER_ID = {{ session.get('user_id') }};
+  window.CURRENT_USERNAME = "{{ session.get('username') }}";
+</script>
+{% endblock %}

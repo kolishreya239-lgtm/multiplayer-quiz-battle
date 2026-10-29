@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Operative Dossier: {{ profile_user.username }} - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem 1.5rem;">
+  
+  <!-- Profile Hero Header -->
+  <div class="cyber-card" style="margin-bottom: 2rem; position: relative; overflow: hidden; border-color: var(--border-cyan);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 86px; height: 86px; border-radius: 50%; background: var(--bg-darker); border: 3px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 0 25px var(--cyan-glow);">
+          {% if profile_user.avatar == 'cyber_ninja' %}🥷
+          {% elif profile_user.avatar == 'pixel_queen' %}👑
+          {% elif profile_user.avatar == 'neon_falcon' %}🦅
+          {% elif profile_user.avatar == 'shadow_knight' %}⚔️
+          {% elif profile_user.avatar == 'code_wizard' %}🧙‍♂️
+          {% elif profile_user.avatar == 'mecha_titan' %}🤖
+          {% elif profile_user.avatar == 'quantum_ghost' %}👻
+          {% else %}🦊{% endif %}
+        </div>
+
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.3rem;">
+            <h2 style="font-size: 2rem; font-weight: 900;">{{ profile_user.username }}</h2>
+            {% if profile_user.is_admin %}
+              <span class="badge-cyber badge-pink"><i data-lucide="shield-alert"></i> Administrator</span>
+            {% elif profile_user.is_guest %}
+              <span class="badge-cyber badge-amber">Guest Operative</span>
+            {% else %}
+              <span class="badge-cyber badge-cyan">Veteran Warrior</span>
+            {% endif %}
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Enlisted: {{ profile_user.created_at.strftime('%B %d, %Y') }} &bull; Status: <span class="text-green font-heading">ACTIVE</span>
+          </p>
+        </div>
+      </div>
+
+      {% if is_own_profile %}
+        <!-- Avatar Change Trigger -->
+        <button type="button" class="btn-cyber btn-cyber-outline btn-sm" onclick="document.getElementById('avatarModal').style.display='flex'">
+          <i data-lucide="user-cog"></i> Change Avatar
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Total Score</span>
+      <div class="breakdown-stat-val text-cyan" style="font-size: 2rem;">{{ stats.total_score }}</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Victories / Total</span>
+      <div class="breakdown-stat-val text-green" style="font-size: 2rem;">{{ stats.wins }} <span style="font-size: 1rem; color: var(--text-muted);">/ {{ stats.total_games }}</span></div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Win Percentage</span>
+      <div class="breakdown-stat-val text-purple" style="font-size: 2rem;">{{ stats.win_rate }}%</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Accuracy Rate</span>
+      <div class="breakdown-stat-val text-amber" style="font-size: 2rem;">{{ stats.accuracy }}%</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Max Kill Streak</span>
+      <div class="breakdown-stat-val" style="color: #ff9900; font-size: 2rem;">🔥 {{ stats.max_streak }}</div>
+    </div>
+  </div>
+
+  <!-- Performance Visual Charts -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div class="cyber-card">
+      <div class="cyber-card-header">
+        <h3 class="cyber-card-title"><i data-lucide="pie-chart"></i> Battle Outbreak Ratio</h3>
+      </div>
+      <div style="max-width: 280px; margin: 0 auto; padding: 1rem;">
+        <canvas id="matchOutcomeChart"></canvas>
+      </div>
+    </div>
+
+    <div class="cyber-card">
+      <div class="cyber-card-header">
+        <h3 class="cyber-card-title"><i data-lucide="bar-chart-2"></i> Performance Metrics</h3>
+      </div>
+      <div style="height: 280px; padding: 1rem;">
+        <canvas id="accuracyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlockable Achievements Showcase -->
+  <div class="cyber-card" style="margin-bottom: 2.5rem;">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="award"></i> Honors &amp; Achievements</h3>
+      <span class="badge-cyber badge-gold">{{ achievements|selectattr('is_unlocked')|list|length }} / {{ achievements|length }} Unlocked</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+      {% for item in achievements %}
+        {% set ach = item.achievement %}
+        {% set unlocked = item.is_unlocked %}
+        <div style="padding: 1.25rem; background: var(--bg-surface); border-radius: 12px; border: 1px solid {% if unlocked %}var(--neon-green){% else %}var(--border-subtle){% endif %}; opacity: {% if unlocked %}1{% else %}0.5{% endif %};">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: {% if unlocked %}rgba(0, 255, 157, 0.15){% else %}rgba(255, 255, 255, 0.05){% endif %}; display: flex; align-items: center; justify-content: center; color: {% if unlocked %}var(--neon-green){% else %}var(--text-muted){% endif %};">
+              <i data-lucide="{{ ach.icon }}"></i>
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; margin-bottom: 0.1rem; color: {% if unlocked %}#fff{% else %}var(--text-muted){% endif %};">{{ ach.title }}</h4>
+              <span class="badge-cyber {% if unlocked %}badge-green{% else %}badge-ghost{% endif %}" style="font-size: 0.65rem;">
+                {% if unlocked %}✓ Unlocked{% else %}🔒 Locked{% endif %}
+              </span>
+            </div>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary);">{{ ach.description }}</p>
+          {% if unlocked and item.unlocked_at %}
+            <span style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
+              Achieved on {{ item.unlocked_at.strftime('%b %d, %Y') }}
+            </span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Match History Table -->
+  <div class="cyber-card">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title"><i data-lucide="history"></i> Match Log History</h3>
+    </div>
+
+    {% if matches %}
+      <div style="overflow-x: auto;">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Room</th>
+              <th>Category</th>
+              <th>Outcome</th>
+              <th>Rank</th>
+              <th>Accuracy</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for participant, match in matches %}
+              <tr>
+                <td style="font-size: 0.8rem; color: var(--text-muted);">{{ match.played_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="font-heading" style="color: var(--neon-cyan);">{{ match.room_code }}</td>
+                <td>{{ match.category.name if match.category else 'Mixed' }}</td>
+                <td>
+                  {% if match.winner_id == profile_user.id %}
+                    <span class="badge-cyber badge-green">Victory</span>
+                  {% elif match.is_draw %}
+                    <span class="badge-cyber badge-gold">Draw</span>
+                  {% else %}
+                    <span class="badge-cyber badge-pink">Defeat</span>
+                  {% endif %}
+                </td>
+                <td class="font-heading">#{{ participant.rank }}</td>
+                <td>{{ participant.correct_count }}/{{ match.total_questions }}</td>
+                <td class="font-heading" style="color: var(--neon-cyan); font-weight: 800;">{{ participant.final_score }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+        No match records found for this operative.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Avatar Selector Modal -->
+{% if is_own_profile %}
+<div id="avatarModal" style="display: none; position: fixed; inset: 0; z-index: 2200; background: var(--bg-overlay); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 1.5rem;">
+  <div class="cyber-card" style="max-width: 520px; width: 100%; border: 2px solid var(--border-cyan);">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="user-check"></i> Choose Avatar</h3>
+      <button type="button" onclick="document.getElementById('avatarModal').style.display='none'" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('profile.update_avatar') }}">
+      <div class="avatar-grid" style="margin-bottom: 1.5rem;">
+        {% for av in available_avatars %}
+          <label class="avatar-option">
+            <input type="radio" name="avatar" value="{{ av }}" {% if profile_user.avatar == av %}checked{% endif %}>
+            <div class="avatar-card">
+              <span class="avatar-icon">
+                {% if av == 'cyber_ninja' %}🥷
+                {% elif av == 'pixel_queen' %}👑
+                {% elif av == 'neon_falcon' %}🦅
+                {% elif av == 'shadow_knight' %}⚔️
+                {% elif av == 'code_wizard' %}🧙‍♂️
+                {% elif av == 'mecha_titan' %}🤖
+                {% elif av == 'quantum_ghost' %}👻
+                {% else %}🦊{% endif %}
+              </span>
+              <span class="avatar-name">{{ av.replace('_', ' ') }}</span>
+            </div>
+          </label>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn-cyber btn-cyber-primary btn-block">
+        Save Avatar Choice
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Chart.js Doughnut - Match Outcomes
+    const ctxOutcome = document.getElementById('matchOutcomeChart');
+    if (ctxOutcome) {
+      new Chart(ctxOutcome, {
+        type: 'doughnut',
+        data: {
+          labels: ['Victories', 'Defeats', 'Draws'],
+          datasets: [{
+            data: [{{ stats.wins }}, {{ stats.losses }}, {{ stats.draws }}],
+            backgroundColor: ['#00ff9d', '#ff2a6d', '#ffd700'],
+            borderColor: '#0a0e1a',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { family: 'Inter' } }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Chart.js Bar - Metrics
+    const ctxMetrics = document.getElementById('accuracyChart');
+    if (ctxMetrics) {
+      new Chart(ctxMetrics, {
+        type: 'bar',
+        data: {
+          labels: ['Win Rate %', 'Accuracy %', 'Max Streak (x10)'],
+          datasets: [{
+            label: 'Rating',
+            data: [{{ stats.win_rate }}, {{ stats.accuracy }}, {{ stats.max_streak * 10 }}],
+            backgroundColor: ['rgba(0, 229, 255, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(255, 184, 0, 0.7)'],
+            borderColor: ['#00e5ff', '#a855f7', '#ffb800'],
+            borderWidth: 2,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

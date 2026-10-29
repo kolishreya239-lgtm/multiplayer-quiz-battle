@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Challenge ({{ today_str }}) - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 5rem 1.5rem; max-width: 860px;">
+  
+  <div class="cyber-card" style="text-align: center; margin-bottom: 2rem; border-color: var(--neon-amber);">
+    <span class="badge-cyber badge-gold"><i data-lucide="calendar"></i> OFFICIAL DAILY TRIAL</span>
+    <h2 style="font-size: 2rem; font-weight: 900; margin: 0.5rem 0;">DAILY CHALLENGE</h2>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto;">
+      Date: <strong>{{ today_str }}</strong> &bull; 5 Synchronized Questions &bull; Speed Bonus Active &bull; One Official Submission Per Day.
+    </p>
+  </div>
+
+  {% if record %}
+    <!-- Already completed today -->
+    <div class="cyber-card" style="text-align: center; padding: 3rem;">
+      <div style="font-size: 4rem; margin-bottom: 0.75rem;">🏅</div>
+      <span class="badge-cyber badge-green">OFFICIALLY RECORDED</span>
+      <h3 style="font-size: 1.75rem; font-weight: 900; margin: 0.75rem 0;">TRIAL COMPLETED FOR TODAY</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        You have already completed today's official challenge. Your performance has been logged on your permanent battle record.
+      </p>
+
+      <div class="results-breakdown-grid" style="max-width: 540px; margin: 0 auto 2rem auto;">
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-gold">{{ record.score }}</div>
+          <div class="breakdown-stat-label">Official Score</div>
+        </div>
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-green">{{ record.correct_count }}/{{ record.total_questions }}</div>
+          <div class="breakdown-stat-label">Correct Answers</div>
+        </div>
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-cyan">{{ record.completed_at.strftime('%H:%M') }}</div>
+          <div class="breakdown-stat-label">Logged At</div>
+        </div>
+      </div>
+
+      <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn-cyber btn-cyber-primary">
+        <i data-lucide="arrow-left"></i> Return to Arena Hub
+      </a>
+    </div>
+  {% else %}
+    <!-- Interactive Daily Challenge Container -->
+    <div id="dailyStartCard" class="cyber-card" style="text-align: center; padding: 2.5rem;">
+      <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem;">Ready to Prove Your Knowledge?</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+        You will face 5 questions. Fast answers earn extra speed bonuses. Take a deep breath and start when ready!
+      </p>
+      <button type="button" class="btn-cyber btn-cyber-primary btn-lg" onclick="startDailyChallenge()">
+        <i data-lucide="play"></i> Begin Daily Challenge
+      </button>
+    </div>
+
+    <!-- Active Question Card -->
+    <div id="dailyQuizView" style="display: none;">
+      <div class="cyber-card" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+        <span class="badge-cyber badge-purple" id="dailyCatBadge">Domain</span>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="font-heading" id="dailyCounter" style="font-size: 0.9rem; font-weight: 700;">QUESTION 1/5</div>
+          <div class="badge-cyber badge-pink" id="dailyTimerBadge">⏱️ 15s</div>
+        </div>
+      </div>
+
+      <div class="cyber-card">
+        <h3 id="dailyQuestionText" style="font-size: 1.25rem; font-weight: 600; line-height: 1.5; margin-bottom: 1.5rem; min-height: 60px;"></h3>
+
+        <div class="options-grid" id="dailyOptionsGrid">
+          <button type="button" class="option-btn" id="dBtnA" onclick="selectDailyOption('A')">
+            <span class="option-keycap">A</span>
+            <span class="option-text" id="dTextA"></span>
+          </button>
+          <button type="button" class="option-btn" id="dBtnB" onclick="selectDailyOption('B')">
+            <span class="option-keycap">B</span>
+            <span class="option-text" id="dTextB"></span>
+          </button>
+          <button type="button" class="option-btn" id="dBtnC" onclick="selectDailyOption('C')">
+            <span class="option-keycap">C</span>
+            <span class="option-text" id="dTextC"></span>
+          </button>
+          <button type="button" class="option-btn" id="dBtnD" onclick="selectDailyOption('D')">
+            <span class="option-keycap">D</span>
+            <span class="option-text" id="dTextD"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final Results Screen -->
+    <div id="dailyResultView" style="display: none;">
+      <div class="cyber-card" style="text-align: center; padding: 2.5rem; border-color: var(--neon-green);">
+        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🌟</div>
+        <span class="badge-cyber badge-green">SUBMISSION CONFIRMED</span>
+        <h2 style="font-size: 2rem; font-weight: 900; margin: 0.5rem 0;" id="dailyFinalScoreHeading">Score: 0 PTS</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+          Your score has been verified server-side and recorded into your statistics.
+        </p>
+
+        <!-- Breakdown List -->
+        <div id="dailyBreakdownList" style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left; margin-bottom: 2rem;"></div>
+
+        <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn-cyber btn-cyber-primary">
+          <i data-lucide="check"></i> Finish &amp; Return to Hub
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/daily.js') }}"></script>
+{% endblock %}

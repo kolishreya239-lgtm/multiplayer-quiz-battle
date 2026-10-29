@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Battle Arena: {{ room.code }} - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 1.5rem 1.5rem 4rem 1.5rem;">
+  
+  <div class="battle-arena">
+    
+    <!-- Top PvP Scoreboard Panel -->
+    <div class="battle-scoreboard">
+      <!-- Player 1 Score Block -->
+      <div class="player-score-block p1" id="p1Block">
+        <div class="player-battle-avatar" id="p1Avatar">🥷</div>
+        <div class="player-score-details">
+          <div class="player-battle-name">
+            <span id="p1Name" class="text-cyan">Player 1</span>
+            <span id="p1AnsweredPill" style="display: none;" class="badge-cyber badge-green"><i data-lucide="check"></i></span>
+          </div>
+          <div class="player-score-val" id="p1Score">0</div>
+          <div class="player-streak-badge" id="p1Streak" style="display: none;">
+            <i data-lucide="flame"></i> <span id="p1StreakVal">0</span> Streak
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Synchronized Timer & Question Counter -->
+      <div class="battle-center-timer">
+        <div class="timer-ring-wrapper">
+          <svg class="timer-svg" width="74" height="74" viewBox="0 0 74 74">
+            <circle class="timer-circle-bg" cx="37" cy="37" r="31"></circle>
+            <circle class="timer-circle-progress" id="timerCircle" cx="37" cy="37" r="31" stroke-dasharray="194.78" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="timer-seconds-text" id="timerSeconds">15</div>
+        </div>
+        <div class="question-counter-pill" id="questionCounter">QUESTION 1/5</div>
+      </div>
+
+      <!-- Player 2 Score Block -->
+      <div class="player-score-block p2" id="p2Block">
+        <div class="player-battle-avatar" id="p2Avatar">👑</div>
+        <div class="player-score-details">
+          <div class="player-battle-name">
+            <span id="p2AnsweredPill" style="display: none;" class="badge-cyber badge-green"><i data-lucide="check"></i></span>
+            <span id="p2Name" class="text-pink">Player 2</span>
+          </div>
+          <div class="player-score-val" id="p2Score">0</div>
+          <div class="player-streak-badge" id="p2Streak" style="display: none;">
+            <i data-lucide="flame"></i> <span id="p2StreakVal">0</span> Streak
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Question Arena Card -->
+    <div class="battle-question-card" id="questionCard">
+      <!-- Category & Difficulty Meta Bar -->
+      <div class="question-meta-bar">
+        <span class="badge-cyber badge-purple" id="categoryBadge">Domain</span>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="badge-cyber badge-cyan" id="difficultyBadge">Medium</span>
+          <span class="badge-cyber badge-green" id="connectionStatusPill"><i data-lucide="wifi"></i> Synced</span>
+        </div>
+      </div>
+
+      <!-- Question Text -->
+      <div class="question-prompt" id="questionPrompt">
+        Awaiting question stream from server...
+      </div>
+
+      <!-- Linear Countdown Bar -->
+      <div class="linear-timer-track">
+        <div class="linear-timer-bar" id="linearTimerBar"></div>
+      </div>
+
+      <!-- 4 Answer Options Grid -->
+      <div class="options-grid" id="optionsGrid">
+        <button type="button" class="option-btn" id="btnOptA" onclick="submitChoice('A')">
+          <span class="option-keycap">A</span>
+          <span class="option-text" id="optTextA">Option A</span>
+        </button>
+
+        <button type="button" class="option-btn" id="btnOptB" onclick="submitChoice('B')">
+          <span class="option-keycap">B</span>
+          <span class="option-text" id="optTextB">Option B</span>
+        </button>
+
+        <button type="button" class="option-btn" id="btnOptC" onclick="submitChoice('C')">
+          <span class="option-keycap">C</span>
+          <span class="option-text" id="optTextC">Option C</span>
+        </button>
+
+        <button type="button" class="option-btn" id="btnOptD" onclick="submitChoice('D')">
+          <span class="option-keycap">D</span>
+          <span class="option-text" id="optTextD">Option D</span>
+        </button>
+      </div>
+
+      <!-- Post-Round Explanation Drawer -->
+      <div class="explanation-panel" id="explanationPanel">
+        <div class="explanation-title">
+          <i data-lucide="lightbulb"></i> Question Debrief:
+        </div>
+        <p class="explanation-text" id="explanationText">
+          Loading explanation...
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Victory / Results Modal -->
+<div class="results-modal" id="resultsModal">
+  <div class="results-card">
+    <div class="winner-trophy">🏆</div>
+    <span class="badge-cyber badge-gold" id="battleResultBadge">MATCH CONCLUDED</span>
+    <h2 class="winner-heading text-cyan" id="winnerAnnouncement">VICTORY!</h2>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem;" id="winnerTextSub">
+      Sensational performance in the battle arena.
+    </p>
+
+    <!-- Podium Standings -->
+    <div class="results-podium-list" id="podiumStandings">
+      <!-- Populated dynamically via JS -->
+    </div>
+
+    <!-- Match Performance Summary -->
+    <div class="results-breakdown-grid" id="performanceBreakdown">
+      <div class="breakdown-stat-card">
+        <div class="breakdown-stat-val text-green" id="resAccuracy">0%</div>
+        <div class="breakdown-stat-label">Accuracy</div>
+      </div>
+      <div class="breakdown-stat-card">
+        <div class="breakdown-stat-val text-cyan" id="resAvgSpeed">0.0s</div>
+        <div class="breakdown-stat-label">Avg Speed</div>
+      </div>
+      <div class="breakdown-stat-card">
+        <div class="breakdown-stat-val text-pink" id="resMaxStreak">0</div>
+        <div class="breakdown-stat-label">Best Streak</div>
+      </div>
+    </div>
+
+    <!-- Newly Unlocked Achievements Toast in Modal -->
+    <div id="unlockedAchievementsContainer" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(0, 255, 157, 0.1); border: 1px solid var(--neon-green); border-radius: 12px;">
+      <span class="badge-cyber badge-green" style="margin-bottom: 0.5rem;"><i data-lucide="award"></i> Achievement Unlocked!</span>
+      <div id="unlockedAchievementsList" style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left; margin-top: 0.5rem;"></div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('dashboard.lobby_view', room_code=room.code) }}" class="btn-cyber btn-cyber-primary btn-lg">
+        <i data-lucide="rotate-ccw"></i> Play Rematch
+      </a>
+      <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn-cyber btn-cyber-outline btn-lg">
+        <i data-lucide="layout-dashboard"></i> Return to Hub
+      </a>
+      <a href="{{ url_for('leaderboard.leaderboard_view') }}" class="btn-cyber btn-cyber-ghost btn-lg">
+        <i data-lucide="trophy"></i> Global Leaderboard
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/battle.js') }}"></script>
+<script>
+  window.ROOM_CODE = "{{ room.code }}";
+  window.CURRENT_USER_ID = {{ session.get('user_id') }};
+  window.CURRENT_USERNAME = "{{ session.get('username') }}";
+</script>
+{% endblock %}

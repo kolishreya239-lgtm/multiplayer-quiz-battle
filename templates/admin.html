@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Command Center - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem 1.5rem;">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge-cyber badge-pink"><i data-lucide="shield-check"></i> ROOT ACCESS</span>
+      <h2 style="font-size: 2.25rem; font-weight: 900; margin-top: 0.4rem;">ADMIN COMMAND CENTER</h2>
+    </div>
+
+    <button type="button" class="btn-cyber btn-cyber-primary" onclick="document.getElementById('addQuestionModal').style.display='flex'">
+      <i data-lucide="plus-circle"></i> Add New Question
+    </button>
+  </div>
+
+  <!-- System Metric Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Total Questions</span>
+      <div class="breakdown-stat-val text-cyan">{{ total_questions }}</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Categories</span>
+      <div class="breakdown-stat-val text-purple">{{ total_categories }}</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Registered Operatives</span>
+      <div class="breakdown-stat-val text-green">{{ total_users }}</div>
+    </div>
+    <div class="cyber-card">
+      <span class="breakdown-stat-label">Battles Concluded</span>
+      <div class="breakdown-stat-val text-pink">{{ total_battles }}</div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Question Pool -->
+  <div class="cyber-card" style="margin-bottom: 2rem;">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title"><i data-lucide="database"></i> Question Pool Registry ({{ questions|length }} Showing)</h3>
+    </div>
+
+    <form method="GET" action="{{ url_for('admin.admin_panel') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+      <select name="category_id" class="form-control" style="width: auto; flex-grow: 1;">
+        <option value="all">All Domains</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="difficulty" class="form-control" style="width: auto;">
+        <option value="all">All Difficulties</option>
+        <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+        <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+      </select>
+
+      <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search prompt text..." style="width: 240px;">
+      <button type="submit" class="btn-cyber btn-cyber-primary btn-sm">Filter</button>
+      {% if search_q or selected_category or selected_difficulty %}
+        <a href="{{ url_for('admin.admin_panel') }}" class="btn-cyber btn-cyber-ghost btn-sm">Reset</a>
+      {% endif %}
+    </form>
+
+    <div style="overflow-x: auto;">
+      <table class="cyber-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Domain</th>
+            <th>Diff</th>
+            <th>Question Prompt</th>
+            <th>Correct</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in questions %}
+            <tr>
+              <td>#{{ q.id }}</td>
+              <td><span class="badge-cyber badge-purple" style="font-size: 0.7rem;">{{ q.category.name if q.category else 'None' }}</span></td>
+              <td>
+                <span class="badge-cyber {% if q.difficulty == 'easy' %}badge-green{% elif q.difficulty == 'hard' %}badge-pink{% else %}badge-cyan{% endif %}" style="font-size: 0.65rem;">
+                  {{ q.difficulty|upper }}
+                </span>
+              </td>
+              <td style="max-width: 460px;">
+                <div style="font-weight: 600; color: #fff; margin-bottom: 0.2rem;">{{ q.question_text }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  A) {{ q.option_a }} &bull; B) {{ q.option_b }} &bull; C) {{ q.option_c }} &bull; D) {{ q.option_d }}
+                </div>
+              </td>
+              <td class="font-heading text-green" style="font-weight: 800;">{{ q.correct_option }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" onsubmit="return confirm('Permanently remove this question?');">
+                  <button type="submit" class="btn-cyber btn-cyber-ghost btn-sm text-pink" title="Delete Question">
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                No questions found matching criteria.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create New Category Card -->
+  <div class="cyber-card">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-purple"><i data-lucide="folder-plus"></i> Add New Category</h3>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.add_category') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) auto; gap: 1rem; align-items: flex-end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Category Name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. Cloud Computing" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Description</label>
+        <input type="text" name="description" class="form-control" placeholder="Brief domain overview">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Color Hex</label>
+        <input type="color" name="color_hex" value="#00e5ff" class="form-control" style="height: 44px; padding: 0.2rem;">
+      </div>
+
+      <button type="submit" class="btn-cyber btn-cyber-secondary">
+        <i data-lucide="plus"></i> Create Category
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<!-- Modal: Add Question -->
+<div id="addQuestionModal" style="display: none; position: fixed; inset: 0; z-index: 2400; background: var(--bg-overlay); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 1.5rem; overflow-y: auto;">
+  <div class="cyber-card" style="max-width: 650px; width: 100%; border: 2px solid var(--border-cyan); margin: 2rem auto;">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="file-plus"></i> Add Question to Battle Pool</h3>
+      <button type="button" onclick="document.getElementById('addQuestionModal').style.display='none'" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.add_question') }}">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select name="category_id" class="form-control" required>
+            {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select name="difficulty" class="form-control">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Question Prompt</label>
+        <textarea name="question_text" class="form-control" rows="2" placeholder="e.g. What does SQL stand for?" required></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Option A</label>
+          <input type="text" name="option_a" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Option B</label>
+          <input type="text" name="option_b" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Option C</label>
+          <input type="text" name="option_c" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Option D</label>
+          <input type="text" name="option_d" class="form-control" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Correct Option</label>
+          <select name="correct_option" class="form-control">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Explanation / Context</label>
+          <input type="text" name="explanation" class="form-control" placeholder="Short fact shown to players after answering">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <button type="button" class="btn-cyber btn-cyber-ghost" style="flex: 1;" onclick="document.getElementById('addQuestionModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn-cyber btn-cyber-primary" style="flex: 2;">
+          <i data-lucide="check"></i> Submit Question to Pool
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

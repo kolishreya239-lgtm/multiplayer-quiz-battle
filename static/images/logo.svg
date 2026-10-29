@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" fill="none">
+  <defs>
+    <linearGradient id="cyberCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#0077FE"/>
+    </linearGradient>
+    <linearGradient id="cyberPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2A6D"/>
+      <stop offset="100%" stop-color="#9D4EDD"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Crest Emblem -->
+  <g transform="translate(10, 10)">
+    <!-- Hexagonal Shield Outer -->
+    <polygon points="50,5 92,28 92,72 50,95 8,72 8,28" stroke="url(#cyberCyan)" stroke-width="4" fill="#0B101D" filter="url(#glow)"/>
+    <polygon points="50,15 84,33 84,67 50,85 16,67 16,33" stroke="rgba(0, 229, 255, 0.3)" stroke-width="2" fill="none"/>
+
+    <!-- Lightning Bolt / Swords Motif -->
+    <path d="M55,20 L32,52 L48,52 L40,80 L68,46 L52,46 Z" fill="url(#cyberPink)" filter="url(#glow)"/>
+    
+    <!-- Core Spark -->
+    <circle cx="50" cy="50" r="4" fill="#FFFFFF" />
+  </g>
+
+  <!-- Typography: QUIZ CLASH -->
+  <g transform="translate(120, 25)">
+    <!-- QUIZ text -->
+    <text x="0" y="52" font-family="'Orbitron', sans-serif" font-weight="900" font-size="52" fill="#FFFFFF" letter-spacing="4">
+      QUIZ
+    </text>
+    
+    <!-- CLASH text with gradient & glow -->
+    <text x="175" y="52" font-family="'Orbitron', sans-serif" font-weight="900" font-size="52" fill="url(#cyberCyan)" letter-spacing="4" filter="url(#glow)">
+      CLASH
+    </text>
+
+    <!-- Tagline -->
+    <text x="2" y="76" font-family="'Inter', sans-serif" font-weight="700" font-size="12" fill="#94A3B8" letter-spacing="3.5">
+      THINK FAST. ANSWER FASTER. WIN.
+    </text>
+
+    <!-- Neon Accent Bar -->
+    <rect x="0" y="86" width="360" height="3" rx="1.5" fill="url(#cyberPink)" />
+  </g>
+</svg>

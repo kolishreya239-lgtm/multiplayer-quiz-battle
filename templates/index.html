@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}QUIZ CLASH - The Ultimate Real-Time Multiplayer Quiz Battle{% endblock %}
+
+{% block content %}
+<!-- Full-Screen Gaming Hero Section -->
+<section class="hero-section">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-badge">
+        <i data-lucide="zap"></i> REAL-TIME MULTIPLAYER ESPORTS ARENA
+      </div>
+      <h1 class="hero-title">
+        CHALLENGE YOUR <br>
+        <span class="gradient-text">FRIENDS.</span>
+      </h1>
+      <p class="hero-lead">
+        Enter the arena. Test your knowledge. Become the Quiz Champion. Battle opponents in real time with synchronized questions, speed bonuses, and live leaderboards.
+      </p>
+
+      <div class="hero-actions">
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn-cyber btn-cyber-primary btn-lg">
+            <i data-lucide="swords"></i> Enter Arena
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.register') }}" class="btn-cyber btn-cyber-primary btn-lg">
+            <i data-lucide="gamepad-2"></i> Play Now
+          </a>
+          <a href="{{ url_for('auth.guest_login') }}" class="btn-cyber btn-cyber-secondary btn-lg">
+            <i data-lucide="user"></i> Quick Guest Demo
+          </a>
+        {% endif %}
+        <a href="#categories" class="btn-cyber btn-cyber-outline btn-lg">
+          <i data-lucide="compass"></i> Explore Categories
+        </a>
+      </div>
+
+      <!-- Real Live Database Metrics -->
+      <div class="hero-stats-bar">
+        <div class="hero-stat-item">
+          <span class="hero-stat-val">{{ total_players }}</span>
+          <span class="hero-stat-label">Registered Players</span>
+        </div>
+        <div class="hero-stat-item">
+          <span class="hero-stat-val">{{ total_battles }}</span>
+          <span class="hero-stat-label">Completed Battles</span>
+        </div>
+        <div class="hero-stat-item">
+          <span class="hero-stat-val">{{ total_categories }}</span>
+          <span class="hero-stat-label">Categories</span>
+        </div>
+        <div class="hero-stat-item">
+          <span class="hero-stat-val">{{ total_questions }}</span>
+          <span class="hero-stat-label">Questions Pool</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated PvP Battle Graphic Card -->
+    <div class="hero-pvp-card">
+      <div class="pvp-display">
+        <div class="pvp-fighter fighter-p1">
+          <div class="fighter-avatar">🥷</div>
+          <span class="fighter-name text-cyan">Cyber_Ninja</span>
+          <span class="badge-cyber badge-cyan">Score: 680</span>
+        </div>
+
+        <div class="pvp-vs-emblem">VS</div>
+
+        <div class="pvp-fighter fighter-p2">
+          <div class="fighter-avatar">👑</div>
+          <span class="fighter-name text-pink">Pixel_Queen</span>
+          <span class="badge-cyber badge-pink">Score: 540</span>
+        </div>
+      </div>
+
+      <div class="cyber-card" style="background: rgba(10, 14, 26, 0.9); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span class="badge-cyber badge-purple">Python Programming</span>
+          <span class="text-pink font-heading" style="font-size: 0.8rem; font-weight: 700;">⏱️ 08s Left</span>
+        </div>
+        <p style="font-size: 0.95rem; font-weight: 600; color: #fff;">
+          "What is the output of bool([]) in Python?"
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem;">
+          <div style="padding: 0.5rem; background: var(--bg-surface); border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--border-subtle); color: var(--text-muted);">A) True</div>
+          <div style="padding: 0.5rem; background: rgba(0, 255, 157, 0.15); border: 1px solid var(--neon-green); border-radius: 6px; font-size: 0.8rem; color: var(--neon-green); font-weight: 700;">✓ B) False (+145)</div>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <span class="badge-cyber badge-green"><i data-lucide="radio"></i> Server State: Synchronized Real-Time</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Game Modes -->
+<section class="container" style="padding: 4rem 1.5rem;">
+  <div style="text-align: center; max-width: 650px; margin: 0 auto;">
+    <span class="badge-cyber badge-purple"><i data-lucide="layers"></i> Battle Arenas</span>
+    <h2 style="font-size: 2.25rem; font-weight: 900; margin: 0.75rem 0 1rem 0;">FEATURED GAME MODES</h2>
+    <p style="color: var(--text-secondary);">Choose your style of competition. Fight in private custom lobbies, climb global queues, or sharpen your mind in solo drills.</p>
+  </div>
+
+  <div class="modes-grid">
+    <div class="mode-card">
+      <div>
+        <div class="mode-icon"><i data-lucide="zap"></i></div>
+        <h3 class="mode-title text-cyan">Quick Match</h3>
+        <p class="mode-desc">Enter the matchmaking queue. The server automatically pairs you against waiting challengers for an instant adrenaline clash.</p>
+      </div>
+      <a href="{% if session.get('user_id') %}{{ url_for('dashboard.dashboard_view') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn-cyber btn-cyber-primary btn-block">
+        Find Opponent
+      </a>
+    </div>
+
+    <div class="mode-card">
+      <div>
+        <div class="mode-icon" style="color: var(--neon-purple); border-color: var(--border-purple); background: rgba(168, 85, 247, 0.1);"><i data-lucide="shield"></i></div>
+        <h3 class="mode-title text-purple">Private Battle</h3>
+        <p class="mode-desc">Generate a 6-digit room code. Customize the category, question timer, and round length. Invite your classmate or rival directly.</p>
+      </div>
+      <a href="{% if session.get('user_id') %}{{ url_for('dashboard.dashboard_view') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn-cyber btn-cyber-secondary btn-block">
+        Create Room
+      </a>
+    </div>
+
+    <div class="mode-card">
+      <div>
+        <div class="mode-icon" style="color: var(--neon-green); border-color: rgba(0, 255, 157, 0.3); background: rgba(0, 255, 157, 0.1);"><i data-lucide="target"></i></div>
+        <h3 class="mode-title text-green">Practice Drill</h3>
+        <p class="mode-desc">Single-player training grounds. Test yourself against the clock with instant answer explanations to learn from every mistake.</p>
+      </div>
+      <a href="{% if session.get('user_id') %}{{ url_for('dashboard.practice_view') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn-cyber btn-cyber-outline btn-block">
+        Start Training
+      </a>
+    </div>
+
+    <div class="mode-card">
+      <div>
+        <div class="mode-icon" style="color: var(--neon-amber); border-color: rgba(255, 184, 0, 0.3); background: rgba(255, 184, 0, 0.1);"><i data-lucide="flame"></i></div>
+        <h3 class="mode-title text-amber">Daily Challenge</h3>
+        <p class="mode-desc">A unified daily question set identical for all players globally each calendar day. Submit once to lock in your daily honor.</p>
+      </div>
+      <a href="{% if session.get('user_id') %}{{ url_for('dashboard.daily_challenge') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn-cyber btn-cyber-ghost btn-block">
+        Today's Trial
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section id="categories" class="container" style="padding: 4rem 1.5rem; border-top: 1px solid var(--border-subtle);">
+  <div style="text-align: center; max-width: 650px; margin: 0 auto 3rem auto;">
+    <span class="badge-cyber badge-cyan"><i data-lucide="book-marked"></i> Battle Domains</span>
+    <h2 style="font-size: 2.25rem; font-weight: 900; margin: 0.75rem 0 1rem 0;">CHOOSE YOUR ARENA</h2>
+    <p style="color: var(--text-secondary);">From deep Python internals and cybersecurity exploits to classical science and gaming lore.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+    {% for cat in categories %}
+      <div class="cyber-card" style="border-left: 4px solid {{ cat.color_hex }};">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div style="width: 42px; height: 42px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; color: {{ cat.color_hex }};">
+            <i data-lucide="{{ cat.icon_name }}"></i>
+          </div>
+          <div>
+            <h4 style="font-size: 1rem; margin-bottom: 0.1rem;">{{ cat.name }}</h4>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">{{ cat.questions.count() }} Verified Questions</span>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          {{ cat.description }}
+        </p>
+        <a href="{% if session.get('user_id') %}{{ url_for('dashboard.practice_view', category=cat.id) }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn-cyber btn-cyber-ghost btn-sm btn-block">
+          Play Category
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Top Leaderboard Preview -->
+<section class="container" style="padding: 4rem 1.5rem; border-top: 1px solid var(--border-subtle);">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge-cyber badge-gold"><i data-lucide="crown"></i> Hall of Fame</span>
+      <h2 style="font-size: 2.25rem; font-weight: 900; margin-top: 0.5rem;">TOP WARRIORS</h2>
+    </div>
+    <a href="{{ url_for('leaderboard.leaderboard_view') }}" class="btn-cyber btn-cyber-outline">
+      Full Global Rankings <i data-lucide="arrow-right"></i>
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% for u, s in top_players %}
+      <div class="cyber-card" style="display: flex; align-items: center; gap: 1.25rem; border-color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#cbd5e1{% else %}#cd7f32{% endif %};">
+        <div style="position: relative;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--bg-darker); border: 3px solid {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#cbd5e1{% else %}#cd7f32{% endif %}; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+            {% if u.avatar == 'cyber_ninja' %}🥷{% elif u.avatar == 'pixel_queen' %}👑{% elif u.avatar == 'neon_falcon' %}🦅{% else %}🧙‍♂️{% endif %}
+          </div>
+          <span style="position: absolute; bottom: -5px; right: -5px; width: 22px; height: 22px; border-radius: 50%; background: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#cbd5e1{% else %}#cd7f32{% endif %}; color: #000; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">
+            {{ loop.index }}
+          </span>
+        </div>
+        <div style="flex-grow: 1;">
+          <h4 style="font-size: 1.1rem; margin-bottom: 0.2rem;">{{ u.username }}</h4>
+          <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+            <span>Wins: <strong class="text-green">{{ s.wins }}</strong></span>
+            <span>Win Rate: <strong class="text-cyan">{{ s.win_rate }}%</strong></span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 900; color: var(--neon-cyan);">{{ s.total_score }}</span>
+          <span style="display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Points</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- How to Play Walkthrough -->
+<section class="container" style="padding: 4rem 1.5rem; border-top: 1px solid var(--border-subtle);">
+  <div style="text-align: center; max-width: 650px; margin: 0 auto 3rem auto;">
+    <span class="badge-cyber badge-green"><i data-lucide="list-ordered"></i> Game Flow</span>
+    <h2 style="font-size: 2.25rem; font-weight: 900; margin: 0.75rem 0 1rem 0;">HOW TO PLAY</h2>
+    <p style="color: var(--text-secondary);">Master the mechanics to maximize your score and climb to victory.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+    <div class="cyber-card" style="text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 229, 255, 0.1); border: 2px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-family: var(--font-heading); font-weight: 900; font-size: 1.25rem; color: var(--neon-cyan);">1</div>
+      <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Join or Host</h4>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Create a private battle room or enter a friend's room code to connect to the lobby.</p>
+    </div>
+
+    <div class="cyber-card" style="text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(168, 85, 247, 0.1); border: 2px solid var(--neon-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-family: var(--font-heading); font-weight: 900; font-size: 1.25rem; color: var(--neon-purple);">2</div>
+      <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Synchronized Drop</h4>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">All players receive the exact same randomized questions and options at the same instant.</p>
+    </div>
+
+    <div class="cyber-card" style="text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 42, 109, 0.1); border: 2px solid var(--neon-pink); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-family: var(--font-heading); font-weight: 900; font-size: 1.25rem; color: var(--neon-pink);">3</div>
+      <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Speed &amp; Streaks</h4>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Fast answers earn up to +50 speed bonus. Consecutive correct answers stack streak multipliers.</p>
+    </div>
+
+    <div class="cyber-card" style="text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 255, 157, 0.1); border: 2px solid var(--neon-green); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-family: var(--font-heading); font-weight: 900; font-size: 1.25rem; color: var(--neon-green);">4</div>
+      <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Claim Victory</h4>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Review in-depth performance stats, unlocked achievements, and watch the confetti rain.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Accordion -->
+<section class="container" style="padding: 4rem 1.5rem 6rem 1.5rem; border-top: 1px solid var(--border-subtle);">
+  <div style="text-align: center; max-width: 650px; margin: 0 auto 3rem auto;">
+    <span class="badge-cyber badge-purple"><i data-lucide="help-circle"></i> Answers</span>
+    <h2 style="font-size: 2.25rem; font-weight: 900; margin: 0.75rem 0 1rem 0;">FREQUENTLY ASKED QUESTIONS</h2>
+  </div>
+
+  <div style="max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem;">
+    <div class="cyber-card">
+      <h4 style="font-size: 1rem; margin-bottom: 0.4rem; color: var(--neon-cyan);">Can I test multiplayer on a single laptop?</h4>
+      <p style="font-size: 0.875rem; color: var(--text-secondary);">Yes! Open one regular browser window (e.g. Chrome) and an Incognito/Private window. Sign in as two different users (or use the instant Guest mode) and join the same room code.</p>
+    </div>
+
+    <div class="cyber-card">
+      <h4 style="font-size: 1rem; margin-bottom: 0.4rem; color: var(--neon-cyan);">How does server validation prevent cheating?</h4>
+      <p style="font-size: 0.875rem; color: var(--text-secondary);">The browser never receives the correct answer ahead of time. When you select an answer, the server checks correctness against its secure database, computes speed from the server's master clock, and calculates scores server-side.</p>
+    </div>
+
+    <div class="cyber-card">
+      <h4 style="font-size: 1rem; margin-bottom: 0.4rem; color: var(--neon-cyan);">Are the sound effects copyright-free?</h4>
+      <p style="font-size: 0.875rem; color: var(--text-secondary);">100%! All game sound effects are generated algorithmically in real time using the browser's Web Audio API oscillators. No external audio files are required, ensuring zero missing asset errors.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

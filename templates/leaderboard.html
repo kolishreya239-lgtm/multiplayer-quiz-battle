@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Esports Leaderboard - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem 1.5rem;">
+  
+  <div style="text-align: center; max-width: 650px; margin: 0 auto 2.5rem auto;">
+    <span class="badge-cyber badge-gold"><i data-lucide="crown"></i> GLOBAL ESPORTS HALL</span>
+    <h2 style="font-size: 2.5rem; font-weight: 900; margin: 0.5rem 0;">CHAMPIONS PODIUM</h2>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+      The ultimate ranking of verified quiz gladiators. Updated in real time after every battle showdown.
+    </p>
+
+    {% if current_user_rank %}
+      <div style="margin-top: 1rem;">
+        <span class="badge-cyber badge-cyan">Your Current Standing: Rank #{{ current_user_rank }}</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Top 3 Podium Layout (2nd on left, 1st in center, 3rd on right) -->
+  {% if podium|length >= 3 %}
+    {% set p1_user, p1_stats = podium[0] %}
+    {% set p2_user, p2_stats = podium[1] %}
+    {% set p3_user, p3_stats = podium[2] %}
+
+    <div class="leaderboard-podium">
+      <!-- 2nd Place (Silver) -->
+      <div class="podium-col">
+        <div class="podium-avatar">
+          {% if p2_user.avatar == 'pixel_queen' %}👑{% elif p2_user.avatar == 'cyber_ninja' %}🥷{% elif p2_user.avatar == 'neon_falcon' %}🦅{% else %}⚔️{% endif %}
+        </div>
+        <div class="podium-pillar podium-second">
+          <span style="font-family: var(--font-heading); font-size: 2rem; font-weight: 900; color: #cbd5e1;">2ND</span>
+          <h4 style="font-size: 1.1rem; margin: 0.3rem 0;">{{ p2_user.username }}</h4>
+          <span class="text-cyan font-heading" style="font-size: 1.25rem; font-weight: 800;">{{ p2_stats.total_score }} PTS</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">{{ p2_stats.wins }} Wins &bull; {{ p2_stats.win_rate }}% WR</span>
+        </div>
+      </div>
+
+      <!-- 1st Place (Gold - Tallest) -->
+      <div class="podium-col">
+        <div class="podium-avatar">
+          {% if p1_user.avatar == 'cyber_ninja' %}🥷{% elif p1_user.avatar == 'pixel_queen' %}👑{% elif p1_user.avatar == 'neon_falcon' %}🦅{% else %}🧙‍♂️{% endif %}
+        </div>
+        <div class="podium-pillar podium-first">
+          <span style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: #ffd700;">1ST</span>
+          <h4 style="font-size: 1.2rem; margin: 0.3rem 0; color: #fff;">{{ p1_user.username }}</h4>
+          <span style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 900; color: #ffd700;">{{ p1_stats.total_score }} PTS</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">🏆 {{ p1_stats.wins }} Wins &bull; {{ p1_stats.win_rate }}% WR</span>
+        </div>
+      </div>
+
+      <!-- 3rd Place (Bronze) -->
+      <div class="podium-col">
+        <div class="podium-avatar">
+          {% if p3_user.avatar == 'neon_falcon' %}🦅{% elif p3_user.avatar == 'shadow_knight' %}⚔️{% elif p3_user.avatar == 'code_wizard' %}🧙‍♂️{% else %}🤖{% endif %}
+        </div>
+        <div class="podium-pillar podium-third">
+          <span style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #cd7f32;">3RD</span>
+          <h4 style="font-size: 1rem; margin: 0.3rem 0;">{{ p3_user.username }}</h4>
+          <span class="text-pink font-heading" style="font-size: 1.15rem; font-weight: 800;">{{ p3_stats.total_score }} PTS</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">{{ p3_stats.wins }} Wins &bull; {{ p3_stats.win_rate }}% WR</span>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Filter & Search Bar -->
+  <div class="cyber-card" style="margin-bottom: 1.5rem; padding: 1rem 1.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <!-- Sort Tabs -->
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('leaderboard.leaderboard_view', sort='points', q=search_query) }}" class="btn-cyber {% if sort_by == 'points' %}btn-cyber-primary{% else %}btn-cyber-ghost{% endif %} btn-sm">
+          <i data-lucide="award"></i> By Total Points
+        </a>
+        <a href="{{ url_for('leaderboard.leaderboard_view', sort='wins', q=search_query) }}" class="btn-cyber {% if sort_by == 'wins' %}btn-cyber-secondary{% else %}btn-cyber-ghost{% endif %} btn-sm">
+          <i data-lucide="flame"></i> By Total Wins
+        </a>
+      </div>
+
+      <!-- Search Input -->
+      <form method="GET" action="{{ url_for('leaderboard.leaderboard_view') }}" style="display: flex; gap: 0.5rem;">
+        <input type="hidden" name="sort" value="{{ sort_by }}">
+        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search warrior tag..." style="width: 220px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+        <button type="submit" class="btn-cyber btn-cyber-outline btn-sm">Search</button>
+        {% if search_query %}
+          <a href="{{ url_for('leaderboard.leaderboard_view', sort=sort_by) }}" class="btn-cyber btn-cyber-ghost btn-sm" title="Clear Search">&times;</a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <!-- Global Rankings Table -->
+  <div class="cyber-card" style="padding: 0.5rem; overflow-x: auto;">
+    <table class="cyber-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Warrior</th>
+          <th>Battles</th>
+          <th>Victories</th>
+          <th>Win Rate</th>
+          <th>Max Streak</th>
+          <th>Total Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u, s in rankings %}
+          <tr {% if session.get('user_id') == u.id %}class="highlight-current"{% endif %}>
+            <td style="font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem;">
+              {% if loop.index == 1 %}<span style="color: #ffd700;">🥇 #1</span>
+              {% elif loop.index == 2 %}<span style="color: #cbd5e1;">🥈 #2</span>
+              {% elif loop.index == 3 %}<span style="color: #cd7f32;">🥉 #3</span>
+              {% else %}<span style="color: var(--text-muted);">#{{ loop.index }}</span>{% endif %}
+            </td>
+
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.4rem;">
+                  {% if u.avatar == 'cyber_ninja' %}🥷
+                  {% elif u.avatar == 'pixel_queen' %}👑
+                  {% elif u.avatar == 'neon_falcon' %}🦅
+                  {% elif u.avatar == 'shadow_knight' %}⚔️
+                  {% elif u.avatar == 'code_wizard' %}🧙‍♂️
+                  {% elif u.avatar == 'mecha_titan' %}🤖
+                  {% elif u.avatar == 'quantum_ghost' %}👻
+                  {% else %}🦊{% endif %}
+                </span>
+                <div>
+                  <a href="{{ url_for('profile.profile_view', username=u.username) }}" style="font-family: var(--font-heading); font-weight: 700; color: #fff;">
+                    {{ u.username }}
+                  </a>
+                  {% if session.get('user_id') == u.id %}
+                    <span class="badge-cyber badge-cyan" style="font-size: 0.65rem; margin-left: 0.4rem;">YOU</span>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+
+            <td>{{ s.total_games }}</td>
+            <td class="text-green font-heading" style="font-weight: 700;">{{ s.wins }}</td>
+            <td class="text-cyan font-heading" style="font-weight: 700;">{{ s.win_rate }}%</td>
+            <td>🔥 {{ s.max_streak }}</td>
+            <td class="font-heading" style="font-size: 1.15rem; font-weight: 900; color: var(--neon-cyan);">
+              {{ s.total_score }}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+              No warriors match your search filter.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

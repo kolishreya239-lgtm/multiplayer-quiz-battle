@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - QUIZ CLASH Arena{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem;">
+
+  <!-- Player Header Banner -->
+  <div class="cyber-card" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem; background: linear-gradient(135deg, rgba(16, 24, 42, 0.95) 0%, rgba(20, 28, 54, 0.95) 100%);">
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div style="width: 76px; height: 76px; border-radius: 50%; background: var(--bg-darker); border: 3px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 0 20px var(--cyan-glow);">
+        {% if user.avatar == 'cyber_ninja' %}🥷
+        {% elif user.avatar == 'pixel_queen' %}👑
+        {% elif user.avatar == 'neon_falcon' %}🦅
+        {% elif user.avatar == 'shadow_knight' %}⚔️
+        {% elif user.avatar == 'code_wizard' %}🧙‍♂️
+        {% elif user.avatar == 'mecha_titan' %}🤖
+        {% elif user.avatar == 'quantum_ghost' %}👻
+        {% else %}🦊{% endif %}
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+          <h2 style="font-size: 1.6rem; font-weight: 900;">{{ user.username }}</h2>
+          {% if user.is_guest %}
+            <span class="badge-cyber badge-amber">Guest Pass</span>
+          {% else %}
+            <span class="badge-cyber badge-cyan">Operative</span>
+          {% endif %}
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Ready for battle. Total Battles: <strong class="text-primary">{{ stats.total_games }}</strong> &bull; Win Rate: <strong class="text-green">{{ stats.win_rate }}%</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+      <div style="text-align: right;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Score</span>
+        <span style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: var(--neon-cyan);">{{ stats.total_score }}</span>
+      </div>
+      <div style="text-align: right;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Victories</span>
+        <span style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: var(--neon-green);">{{ stats.wins }}</span>
+      </div>
+      <div style="text-align: right;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Max Streak</span>
+        <span style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 900; color: #ff9900;">🔥 {{ stats.max_streak }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Battle Actions Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    
+    <!-- 1. Quick Match Card -->
+    <div class="cyber-card" style="border-top: 4px solid var(--neon-cyan);">
+      <div class="cyber-card-header">
+        <h3 class="cyber-card-title text-cyan"><i data-lucide="zap"></i> Quick Match</h3>
+        <span class="badge-cyber badge-cyan">Matchmaking</span>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Queue up for a real-time showdown against a live challenger. The server pairs you automatically.
+      </p>
+      <button type="button" class="btn-cyber btn-cyber-primary btn-block" onclick="startQuickMatch()">
+        <i data-lucide="search"></i> Find Challenger Now
+      </button>
+    </div>
+
+    <!-- 2. Create Private Room Card -->
+    <div class="cyber-card" style="border-top: 4px solid var(--neon-purple);">
+      <div class="cyber-card-header">
+        <h3 class="cyber-card-title text-purple"><i data-lucide="plus-circle"></i> Create Room</h3>
+        <span class="badge-cyber badge-purple">Custom Lobby</span>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Host a custom battle. Choose your domain, questions count, difficulty, and invite friends via room code.
+      </p>
+      <button type="button" class="btn-cyber btn-cyber-secondary btn-block" onclick="openCreateModal()">
+        <i data-lucide="settings-2"></i> Configure &amp; Create Room
+      </button>
+    </div>
+
+    <!-- 3. Join with Code Card -->
+    <div class="cyber-card" style="border-top: 4px solid var(--neon-green);">
+      <div class="cyber-card-header">
+        <h3 class="cyber-card-title text-green"><i data-lucide="log-in"></i> Join Room</h3>
+        <span class="badge-cyber badge-green">Direct Code</span>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.join_room_post') }}">
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <input type="text" name="room_code" class="form-control" placeholder="e.g. QC-7421" style="text-transform: uppercase; font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 0.1em; text-align: center;" required>
+        </div>
+        <button type="submit" class="btn-cyber btn-cyber-success btn-block">
+          <i data-lucide="arrow-right-circle"></i> Enter Battle Lobby
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lower Section: Daily Challenge & Active Rooms & Recent Matches -->
+  <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.75rem; margin-bottom: 2.5rem;">
+    
+    <!-- Left Column: Daily Challenge & Recent Matches -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Daily Challenge Card -->
+      <div class="cyber-card" style="border-left: 4px solid var(--neon-amber); background: linear-gradient(135deg, rgba(16, 24, 42, 0.9) 0%, rgba(35, 25, 15, 0.9) 100%);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+          <span class="badge-cyber badge-gold"><i data-lucide="calendar"></i> Daily Challenge &bull; {{ today_str }}</span>
+          {% if daily_record %}
+            <span class="badge-cyber badge-green">✓ Completed Today</span>
+          {% else %}
+            <span class="badge-cyber badge-pink">Uncompleted</span>
+          {% endif %}
+        </div>
+        
+        <h3 style="font-size: 1.25rem; margin-bottom: 0.4rem;">Today's Global Synchronized Trial</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          5 deterministic questions generated for all operatives worldwide. Complete it to log your official daily ranking!
+        </p>
+
+        {% if daily_record %}
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-darker); padding: 0.75rem 1.25rem; border-radius: 8px;">
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Your Official Score Today:</span>
+            <span class="font-heading text-gold" style="font-size: 1.25rem; font-weight: 900;">{{ daily_record.score }} PTS ({{ daily_record.correct_count }}/5)</span>
+          </div>
+        {% else %}
+          <a href="{{ url_for('dashboard.daily_challenge') }}" class="btn-cyber btn-cyber-primary btn-sm">
+            <i data-lucide="play"></i> Launch Today's Challenge
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Recent Matches -->
+      <div class="cyber-card">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title"><i data-lucide="history"></i> Recent Match History</h3>
+          <a href="{{ url_for('profile.profile_view') }}" style="font-size: 0.8rem;" class="text-cyan">View All</a>
+        </div>
+
+        {% if recent_matches %}
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for participant, match in recent_matches %}
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: 8px; border-left: 3px solid {% if match.winner_id == user.id %}var(--neon-green){% elif match.is_draw %}var(--neon-amber){% else %}var(--neon-pink){% endif %};">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="font-heading" style="font-size: 0.85rem; font-weight: 700;">{{ match.room_code }}</span>
+                    <span class="badge-cyber badge-purple" style="font-size: 0.65rem;">{{ match.category.name if match.category else 'Mixed' }}</span>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">{{ match.played_at.strftime('%b %d, %H:%M') }}</span>
+                </div>
+
+                <div style="text-align: right;">
+                  <span class="font-heading" style="font-size: 1rem; font-weight: 800; color: {% if match.winner_id == user.id %}var(--neon-green){% elif match.is_draw %}var(--neon-amber){% else %}var(--neon-pink){% endif %};">
+                    {% if match.winner_id == user.id %}VICTORY (+{{ participant.final_score }})
+                    {% elif match.is_draw %}DRAW ({{ participant.final_score }})
+                    {% else %}DEFEAT ({{ participant.final_score }}){% endif %}
+                  </span>
+                  <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Rank #{{ participant.rank }} &bull; {{ participant.correct_count }}/{{ match.total_questions }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <i data-lucide="inbox" style="width: 36px; height: 36px; margin-bottom: 0.5rem;"></i>
+            <p style="font-size: 0.85rem;">No battles logged yet. Jump into Quick Match or Private Battle!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Live Open Rooms & Practice Launch -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Open Lobbies in Real-Time -->
+      <div class="cyber-card">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title text-cyan"><i data-lucide="radio"></i> Open Lobbies</h3>
+          <span class="badge-cyber badge-cyan">{{ open_rooms|length }} Available</span>
+        </div>
+
+        {% if open_rooms %}
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for rm in open_rooms %}
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div>
+                  <div class="font-heading" style="font-size: 0.95rem; font-weight: 800; color: var(--neon-cyan);">{{ rm.code }}</div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">{{ rm.category_name }} &bull; {{ rm.question_count }} Qs</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span class="badge-cyber badge-purple" style="font-size: 0.75rem;">{{ rm.player_count }}/4 Players</span>
+                  <form method="POST" action="{{ url_for('dashboard.join_room_post') }}">
+                    <input type="hidden" name="room_code" value="{{ rm.code }}">
+                    <button type="submit" class="btn-cyber btn-cyber-primary btn-sm">Join</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <i data-lucide="users" style="width: 36px; height: 36px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+            <p style="font-size: 0.85rem;">No open lobbies right now.<br>Create one and invite a friend!</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Solo Practice Box -->
+      <div class="cyber-card" style="border-top: 4px solid var(--neon-green);">
+        <div class="cyber-card-header">
+          <h3 class="cyber-card-title text-green"><i data-lucide="target"></i> Solo Practice</h3>
+          <span class="badge-cyber badge-green">Zero Risk</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Sharpen your skills against the timer with full answer explanations without affecting your battle ranking.
+        </p>
+        <a href="{{ url_for('dashboard.practice_view') }}" class="btn-cyber btn-cyber-outline btn-block">
+          Launch Practice Training
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Create Custom Room -->
+<div id="createRoomModal" style="display: none; position: fixed; inset: 0; z-index: 2100; background: var(--bg-overlay); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 1.5rem;">
+  <div class="cyber-card" style="max-width: 520px; width: 100%; border: 2px solid var(--border-cyan); box-shadow: var(--shadow-neon-cyan);">
+    <div class="cyber-card-header">
+      <h3 class="cyber-card-title text-cyan"><i data-lucide="sliders"></i> Room Setup</h3>
+      <button type="button" onclick="closeCreateModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('dashboard.create_room') }}">
+      <input type="hidden" name="game_mode" value="pvp">
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select name="category_id" class="form-control">
+          <option value="all">⚡ All Categories (Mixed Arena)</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Difficulty</label>
+        <select name="difficulty" class="form-control">
+          <option value="all">All Difficulties (Balanced)</option>
+          <option value="easy">Easy (Warmup)</option>
+          <option value="medium" selected>Medium (Standard)</option>
+          <option value="hard">Hard (Mastermind)</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Questions</label>
+          <select name="question_count" class="form-control">
+            <option value="5" selected>5 Questions (Speed)</option>
+            <option value="7">7 Questions</option>
+            <option value="10">10 Questions (Championship)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Time Per Question</label>
+          <select name="question_time" class="form-control">
+            <option value="10">10 Seconds (Blitz)</option>
+            <option value="15" selected>15 Seconds (Standard)</option>
+            <option value="20">20 Seconds (Relaxed)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <button type="button" class="btn-cyber btn-cyber-ghost" style="flex: 1;" onclick="closeCreateModal()">Cancel</button>
+        <button type="submit" class="btn-cyber btn-cyber-primary" style="flex: 2;">
+          <i data-lucide="check"></i> Create Lobby
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Quick Match Queue -->
+<div id="quickMatchModal" style="display: none; position: fixed; inset: 0; z-index: 2100; background: var(--bg-overlay); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 1.5rem;">
+  <div class="cyber-card" style="max-width: 440px; width: 100%; text-align: center; border: 2px solid var(--border-cyan); box-shadow: var(--shadow-neon-cyan); padding: 2.5rem;">
+    <div style="width: 70px; height: 70px; border-radius: 50%; border: 3px dashed var(--neon-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; animation: spin 4s linear infinite;">
+      <i data-lucide="loader-2" style="width: 36px; height: 36px; color: var(--neon-cyan);"></i>
+    </div>
+    
+    <h3 class="font-heading" style="font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem;">FINDING OPPONENT</h3>
+    <p id="quickMatchStatusText" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">
+      Searching matchmaking queue for a challenger...
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <button type="button" class="btn-cyber btn-cyber-danger btn-block" onclick="cancelQuickMatch()">
+        Cancel Search
+      </button>
+      <a href="{{ url_for('dashboard.practice_view') }}" class="btn-cyber btn-cyber-outline btn-sm">
+        Or Play Practice Mode Instead
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let socket = null;
+
+  function initSocket() {
+    if (!socket) {
+      socket = io();
+      socket.on('quick_match_queued', data => {
+        document.getElementById('quickMatchStatusText').innerText = data.message;
+      });
+
+      socket.on('quick_match_found', data => {
+        window.soundEngine.play('start');
+        document.getElementById('quickMatchStatusText').innerText = 'Opponent Matched! Entering Battle Lobby...';
+        setTimeout(() => {
+          window.location.href = `/lobby/${data.room_code}`;
+        }, 1000);
+      });
+    }
+  }
+
+  function startQuickMatch() {
+    initSocket();
+    document.getElementById('quickMatchModal').style.display = 'flex';
+    window.soundEngine.play('click');
+    socket.emit('join_quick_match');
+  }
+
+  function cancelQuickMatch() {
+    if (socket) {
+      socket.emit('leave_quick_match');
+    }
+    document.getElementById('quickMatchModal').style.display = 'none';
+    window.soundEngine.play('click');
+  }
+
+  function openCreateModal() {
+    document.getElementById('createRoomModal').style.display = 'flex';
+    window.soundEngine.play('click');
+  }
+
+  function closeCreateModal() {
+    document.getElementById('createRoomModal').style.display = 'none';
+    window.soundEngine.play('click');
+  }
+</script>
+{% endblock %}

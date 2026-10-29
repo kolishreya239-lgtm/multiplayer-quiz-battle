@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Solo Practice Drill - QUIZ CLASH{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 5rem 1.5rem; max-width: 860px;">
+  
+  <!-- Setup Screen -->
+  <div id="practiceSetupView">
+    <div class="cyber-card" style="text-align: center; margin-bottom: 2rem;">
+      <span class="badge-cyber badge-green"><i data-lucide="target"></i> SIMULATION LAB</span>
+      <h2 style="font-size: 2rem; font-weight: 900; margin: 0.5rem 0;">SOLO PRACTICE DRILL</h2>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto;">
+        Hone your knowledge with zero rank risk. Get instant answer verification, time breakdown, and comprehensive explanations.
+      </p>
+    </div>
+
+    <div class="cyber-card">
+      <div class="form-group">
+        <label class="form-label">Select Category</label>
+        <select id="pracCategory" class="form-control">
+          <option value="all">⚡ All Categories (Mixed)</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if selected_cat == cat.id|string %}selected{% endif %}>{{ cat.name }} ({{ cat.questions.count() }} Qs)</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select id="pracDifficulty" class="form-control">
+            <option value="all">All Difficulties</option>
+            <option value="easy">Easy (Fundamentals)</option>
+            <option value="medium" selected>Medium (Standard)</option>
+            <option value="hard">Hard (Mastery)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Questions</label>
+          <select id="pracCount" class="form-control">
+            <option value="5" selected>5 Questions (Quick)</option>
+            <option value="10">10 Questions (Standard)</option>
+            <option value="15">15 Questions (Endurance)</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" class="btn-cyber btn-cyber-success btn-lg btn-block" onclick="startPractice()" style="margin-top: 1rem;">
+        <i data-lucide="play-circle"></i> Launch Simulation Drill
+      </button>
+    </div>
+  </div>
+
+  <!-- Active Drill Question Screen -->
+  <div id="practiceQuizView" style="display: none;">
+    <div class="cyber-card" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <span class="badge-cyber badge-purple" id="pracCategoryBadge">Category</span>
+        <span class="badge-cyber badge-cyan" id="pracDiffBadge">Medium</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="font-heading" id="pracCounter" style="font-size: 0.9rem; font-weight: 700;">QUESTION 1/5</div>
+        <div class="badge-cyber badge-gold" id="pracScoreBadge">Score: 0</div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="cyber-card" style="margin-bottom: 1.5rem;">
+      <h3 id="pracQuestionText" style="font-size: 1.25rem; font-weight: 600; line-height: 1.5; margin-bottom: 1.5rem; min-height: 60px;">
+        Loading question...
+      </h3>
+
+      <div class="options-grid" id="pracOptionsGrid">
+        <button type="button" class="option-btn" id="pracBtnA" onclick="choosePracticeAnswer('A')">
+          <span class="option-keycap">A</span>
+          <span class="option-text" id="pracTextA">Option A</span>
+        </button>
+        <button type="button" class="option-btn" id="pracBtnB" onclick="choosePracticeAnswer('B')">
+          <span class="option-keycap">B</span>
+          <span class="option-text" id="pracTextB">Option B</span>
+        </button>
+        <button type="button" class="option-btn" id="pracBtnC" onclick="choosePracticeAnswer('C')">
+          <span class="option-keycap">C</span>
+          <span class="option-text" id="pracTextC">Option C</span>
+        </button>
+        <button type="button" class="option-btn" id="pracBtnD" onclick="choosePracticeAnswer('D')">
+          <span class="option-keycap">D</span>
+          <span class="option-text" id="pracTextD">Option D</span>
+        </button>
+      </div>
+
+      <!-- Explanation Box -->
+      <div class="explanation-panel" id="pracExpPanel" style="display: none; margin-top: 1.5rem;">
+        <div class="explanation-title text-cyan">
+          <i data-lucide="info"></i> Explanation:
+        </div>
+        <p class="explanation-text" id="pracExpText"></p>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-cyber btn-cyber-primary" id="pracNextBtn" onclick="nextPracticeQuestion()" style="display: none;">
+          Next Question <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End of Drill Summary Screen -->
+  <div id="practiceSummaryView" style="display: none;">
+    <div class="cyber-card" style="text-align: center; padding: 2.5rem;">
+      <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎯</div>
+      <span class="badge-cyber badge-green">DRILL COMPLETED</span>
+      <h2 style="font-size: 2rem; font-weight: 900; margin: 0.5rem 0;">PRACTICE REPORT</h2>
+      
+      <div class="results-breakdown-grid" style="margin: 2rem 0;">
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-cyan" id="sumFinalScore">0</div>
+          <div class="breakdown-stat-label">Total Score</div>
+        </div>
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-green" id="sumAccuracy">0%</div>
+          <div class="breakdown-stat-label">Accuracy</div>
+        </div>
+        <div class="breakdown-stat-card">
+          <div class="breakdown-stat-val text-purple" id="sumCorrect">0/5</div>
+          <div class="breakdown-stat-label">Correct Answers</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button type="button" class="btn-cyber btn-cyber-primary" onclick="restartPractice()">
+          <i data-lucide="rotate-ccw"></i> Practice Again
+        </button>
+        <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn-cyber btn-cyber-outline">
+          <i data-lucide="layout-dashboard"></i> Back to Arena
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/practice.js') }}"></script>
+{% endblock %}
