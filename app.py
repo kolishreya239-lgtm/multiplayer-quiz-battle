@@ -54,6 +54,7 @@ def create_app(config_class=Config):
     return app, socketio
 
 app, socketio = create_app()
+application = app
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
